@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PoPlist | Ranking de Votação</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="container">
+        <p class="eyebrow">Projeto público de votação</p>
+        <h1>PoPlist</h1>
+        <p class="hero-text">
+          Vote uma vez por dia e acompanhe quem está liderando o ranking em tempo
+          real.
+        </p>
+      </div>
+    </header>
+
+    <main class="container page-content">
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Status da votação</p>
+            <h2>Seu voto de hoje</h2>
+          </div>
+          <span id="vote-status-badge" class="status-badge">Carregando...</span>
+        </div>
+
+        <div id="public-message" class="message hidden" role="alert"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Destaque</p>
+            <h2>Top 10</h2>
+          </div>
+        </div>
+
+        <div id="top10-loading" class="state-box">Carregando ranking...</div>
+        <div id="top10-list" class="top-grid hidden"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Lista completa</p>
+            <h2>Pessoas cadastradas</h2>
+          </div>
+        </div>
+
+        <div id="all-people-loading" class="state-box">Carregando pessoas...</div>
+        <div id="all-people-list" class="people-grid hidden"></div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

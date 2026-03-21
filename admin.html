@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PoPlist | Painel Admin</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="hero hero-admin">
+      <div class="container">
+        <p class="eyebrow">Acesso privado</p>
+        <h1>Painel Administrativo</h1>
+        <p class="hero-text">
+          Faça login para cadastrar, editar e remover pessoas do ranking.
+        </p>
+      </div>
+    </header>
+
+    <main class="container page-content">
+      <section id="login-section" class="panel auth-panel">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Login</p>
+            <h2>Entrar no painel</h2>
+          </div>
+        </div>
+
+        <form id="login-form" class="stack-form">
+          <label>
+            <span>E-mail</span>
+            <input type="email" id="login-email" required />
+          </label>
+
+          <label>
+            <span>Senha</span>
+            <input type="password" id="login-password" required />
+          </label>
+
+          <button type="submit" class="primary-button">Entrar</button>
+        </form>
+
+        <div id="login-message" class="message hidden" role="alert"></div>
+      </section>
+
+      <section id="dashboard-section" class="hidden">
+        <div class="panel dashboard-header">
+          <div>
+            <p class="section-kicker">Sessão ativa</p>
+            <h2>Gerenciar pessoas</h2>
+            <p id="logged-user" class="muted-text"></p>
+          </div>
+          <button id="logout-button" class="secondary-button">Sair</button>
+        </div>
+
+        <div id="dashboard-message" class="message hidden" role="alert"></div>
+
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker">Cadastro</p>
+              <h2 id="form-title">Nova pessoa</h2>
+            </div>
+          </div>
+
+          <form id="person-form" class="stack-form">
+            <input type="hidden" id="person-id" />
+
+            <label>
+              <span>Nome</span>
+              <input type="text" id="person-name" required maxlength="120" />
+            </label>
+
+            <label>
+              <span>URL da foto</span>
+              <input
+                type="url"
+                id="person-photo-url"
+                placeholder="https://exemplo.com/foto.jpg"
+              />
+            </label>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="person-active" checked />
+              <span>Ativo no ranking público</span>
+            </label>
+
+            <div class="button-row">
+              <button type="submit" class="primary-button" id="save-person-button">
+                Salvar pessoa
+              </button>
+              <button type="button" class="ghost-button hidden" id="cancel-edit-button">
+                Cancelar edição
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker">Lista interna</p>
+              <h2>Pessoas cadastradas</h2>
+            </div>
+          </div>
+
+          <div id="admin-loading" class="state-box">Carregando pessoas...</div>
+          <div id="admin-people-list" class="admin-list hidden"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>
