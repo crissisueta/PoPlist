@@ -118,9 +118,6 @@
                 <p class="votes-total">${person.votes_count} voto(s)</p>
               </div>
             </div>
-            <div class="top-card-action">
-              ${createVoteButton(person.id)}
-            </div>
           </article>
         `
       )

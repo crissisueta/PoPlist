@@ -415,6 +415,8 @@ input {
   .top-card-first {
     grid-template-columns: 1fr;
     justify-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
   }
 
   .top-card-action {
@@ -422,9 +424,32 @@ input {
     justify-content: flex-start;
   }
 
+  .top-card .card-header {
+    gap: 10px;
+  }
+
+  .top-card .votes-total {
+    margin: 4px 0 0;
+  }
+
+  .top-card-first .person-name {
+    font-size: 1.18rem;
+  }
+
+  .top-card-first .rank-pill {
+    padding: 7px 12px;
+    font-size: 0.9rem;
+  }
+
   .avatar,
   .avatar-placeholder {
     width: 58px;
     height: 58px;
+  }
+
+  .top-card-first .avatar,
+  .top-card-first .avatar-placeholder {
+    width: 64px;
+    height: 64px;
   }
 }
