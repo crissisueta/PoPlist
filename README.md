@@ -102,51 +102,51 @@ grant execute on function public.submit_vote(uuid, text, date) to anon, authenti
 Execute este bloco depois do schema:
 
 ```sql
-alter table public.people enable row level security;
-alter table public.votes enable row level security;
+  alter table public.people enable row level security;
+  alter table public.votes enable row level security;
 
-drop policy if exists "public_can_read_active_people" on public.people;
-create policy "public_can_read_active_people"
-on public.people
-for select
-to anon, authenticated
-using (active = true);
+  drop policy if exists "public_can_read_active_people" on public.people;
+  create policy "public_can_read_active_people"
+  on public.people
+  for select
+  to anon, authenticated
+  using (active = true);
 
-drop policy if exists "admin_can_insert_people" on public.people;
-create policy "admin_can_insert_people"
-on public.people
-for insert
-to authenticated
-with check ((auth.jwt() ->> 'email') = 'seu-email-admin@exemplo.com');
+  drop policy if exists "admin_can_insert_people" on public.people;
+  create policy "admin_can_insert_people"
+  on public.people
+  for insert
+  to authenticated
+  with check ((auth.jwt() ->> 'email') = 'seu-email-admin@exemplo.com');
 
-drop policy if exists "admin_can_update_people" on public.people;
-create policy "admin_can_update_people"
-on public.people
-for update
-to authenticated
-using ((auth.jwt() ->> 'email') = 'seu-email-admin@exemplo.com')
-with check ((auth.jwt() ->> 'email') = 'seu-email-admin@exemplo.com');
+  drop policy if exists "admin_can_update_people" on public.people;
+  create policy "admin_can_update_people"
+  on public.people
+  for update
+  to authenticated
+  using ((auth.jwt() ->> 'email') = 'seu-email-admin@exemplo.com')
+  with check ((auth.jwt() ->> 'email') = 'seu-email-admin@exemplo.com');
 
-drop policy if exists "admin_can_delete_people" on public.people;
-create policy "admin_can_delete_people"
-on public.people
-for delete
-to authenticated
-using ((auth.jwt() ->> 'email') = 'seu-email-admin@exemplo.com');
+  drop policy if exists "admin_can_delete_people" on public.people;
+  create policy "admin_can_delete_people"
+  on public.people
+  for delete
+  to authenticated
+  using ((auth.jwt() ->> 'email') = 'seu-email-admin@exemplo.com');
 
-drop policy if exists "public_can_read_votes_for_daily_check" on public.votes;
-create policy "public_can_read_votes_for_daily_check"
-on public.votes
-for select
-to anon, authenticated
-using (true);
+  drop policy if exists "public_can_read_votes_for_daily_check" on public.votes;
+  create policy "public_can_read_votes_for_daily_check"
+  on public.votes
+  for select
+  to anon, authenticated
+  using (true);
 
-drop policy if exists "public_can_insert_votes" on public.votes;
-create policy "public_can_insert_votes"
-on public.votes
-for insert
-to anon, authenticated
-with check (true);
+  drop policy if exists "public_can_insert_votes" on public.votes;
+  create policy "public_can_insert_votes"
+  on public.votes
+  for insert
+  to anon, authenticated
+  with check (true);
 ```
 
 Importante:
