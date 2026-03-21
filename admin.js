@@ -17,6 +17,7 @@
   const adminLoadingElement = document.getElementById("admin-loading");
   const formTitleElement = document.getElementById("form-title");
   const cancelEditButton = document.getElementById("cancel-edit-button");
+  const savePersonButton = document.getElementById("save-person-button");
 
   function getCurrentMessageElement() {
     return dashboardSection.classList.contains("hidden")
@@ -26,6 +27,8 @@
 
   function showAdminMessage(type, text) {
     const messageElement = getCurrentMessageElement();
+    loginMessageElement.textContent = "";
+    dashboardMessageElement.textContent = "";
     loginMessageElement.className = "message hidden";
     dashboardMessageElement.className = "message hidden";
     messageElement.textContent = text;
@@ -50,6 +53,66 @@
   function isAdminUser(session) {
     const userEmail = session?.user?.email?.toLowerCase();
     return Boolean(userEmail && userEmail === ADMIN_EMAIL.toLowerCase());
+  }
+
+  function formatSupabaseError(error, fallbackMessage) {
+    if (!error) {
+      return fallbackMessage;
+    }
+
+    const details = [error.message, error.details, error.hint]
+      .filter(Boolean)
+      .join(" | ");
+
+    return details ? `${fallbackMessage} Detalhes: ${details}` : fallbackMessage;
+  }
+
+  async function getValidatedAdminSession() {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      console.error("Erro ao recuperar a sessao do admin:", error);
+      showAdminMessage(
+        "error",
+        formatSupabaseError(error, "Nao foi possivel validar sua sessao atual.")
+      );
+      return null;
+    }
+
+    if (!session) {
+      console.error("Tentativa de acao admin sem sessao autenticada.");
+      showAdminMessage("error", "Sua sessao expirou. Faca login novamente.");
+      showLoginOnly();
+      return null;
+    }
+
+    if (!isAdminUser(session)) {
+      console.error("Sessao autenticada sem permissao de admin:", session.user);
+      showAdminMessage("error", "Este usuario nao tem permissao de administrador.");
+      return null;
+    }
+
+    return session;
+  }
+
+  function buildPersonPayload() {
+    return {
+      name: personNameInput.value.trim(),
+      photo_url: personPhotoUrlInput.value.trim() || null,
+      active: personActiveInput.checked,
+    };
+  }
+
+  function setPersonFormBusy(isBusy, editingPersonId) {
+    savePersonButton.disabled = isBusy;
+    savePersonButton.textContent = isBusy
+      ? editingPersonId
+        ? "Salvando alteracoes..."
+        : "Criando pessoa..."
+      : "Salvar pessoa";
   }
 
   function showLoginOnly() {
@@ -136,14 +199,25 @@
     adminLoadingElement.classList.remove("hidden");
     adminPeopleListElement.classList.add("hidden");
 
+    const session = await getValidatedAdminSession();
+
+    if (!session) {
+      adminLoadingElement.textContent = "Sessao admin indisponivel.";
+      return;
+    }
+
     const { data, error } = await supabase
       .from("people")
       .select("id, name, photo_url, active, votes_count")
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error("Erro ao carregar pessoas no painel:", error);
       adminLoadingElement.textContent = "Erro ao carregar pessoas.";
-      showAdminMessage("error", "Nao foi possivel carregar o cadastro.");
+      showAdminMessage(
+        "error",
+        formatSupabaseError(error, "Nao foi possivel carregar o cadastro.")
+      );
       return;
     }
 
@@ -159,11 +233,16 @@
     });
 
     if (error) {
-      showAdminMessage("error", "E-mail ou senha invalidos.");
+      console.error("Erro no login admin:", error);
+      showAdminMessage(
+        "error",
+        formatSupabaseError(error, "E-mail ou senha invalidos.")
+      );
       return null;
     }
 
     if (!isAdminUser(data.session)) {
+      console.error("Usuario autenticado sem permissao admin:", data.session?.user);
       await supabase.auth.signOut();
       showAdminMessage(
         "error",
@@ -179,22 +258,50 @@
   }
 
   async function createPerson(payload) {
-    const { error } = await supabase.from("people").insert(payload);
+    try {
+      console.log("createPerson > antes do insert", payload);
 
-    if (error) {
-      showAdminMessage("error", "Nao foi possivel criar a pessoa.");
+      const { error } = await supabase.from("people").insert([payload]);
+
+      if (error) {
+        console.error("createPerson > erro no insert", error);
+        showAdminMessage(
+          "error",
+          formatSupabaseError(error, "Nao foi possivel criar a pessoa.")
+        );
+        return false;
+      }
+
+      console.log("createPerson > insert concluido com sucesso");
+      showAdminMessage("success", `Pessoa "${payload.name}" criada com sucesso.`);
+      return true;
+    } catch (error) {
+      console.error("createPerson > excecao inesperada", error);
+      showAdminMessage(
+        "error",
+        formatSupabaseError(error, "Erro inesperado ao criar a pessoa.")
+      );
       return false;
     }
-
-    showAdminMessage("success", "Pessoa criada com sucesso.");
-    return true;
   }
 
   async function updatePerson(personId, payload) {
+    const session = await getValidatedAdminSession();
+
+    if (!session) {
+      return false;
+    }
+
+    console.log("Atualizando pessoa:", { personId, payload });
+
     const { error } = await supabase.from("people").update(payload).eq("id", personId);
 
     if (error) {
-      showAdminMessage("error", "Nao foi possivel atualizar a pessoa.");
+      console.error("Erro ao atualizar pessoa:", error, { personId, payload });
+      showAdminMessage(
+        "error",
+        formatSupabaseError(error, "Nao foi possivel atualizar a pessoa.")
+      );
       return false;
     }
 
@@ -203,10 +310,21 @@
   }
 
   async function deletePerson(personId) {
+    const session = await getValidatedAdminSession();
+
+    if (!session) {
+      return false;
+    }
+
+    console.log("Excluindo pessoa:", personId);
     const { error } = await supabase.from("people").delete().eq("id", personId);
 
     if (error) {
-      showAdminMessage("error", "Nao foi possivel excluir a pessoa.");
+      console.error("Erro ao excluir pessoa:", error, { personId });
+      showAdminMessage(
+        "error",
+        formatSupabaseError(error, "Nao foi possivel excluir a pessoa.")
+      );
       return false;
     }
 
@@ -238,28 +356,50 @@
     event.preventDefault();
     hideAdminMessage();
 
-    const payload = {
-      name: personNameInput.value.trim(),
-      photo_url: personPhotoUrlInput.value.trim() || null,
-      active: personActiveInput.checked,
-    };
+    const payload = buildPersonPayload();
+    const editingPersonId = personIdInput.value;
+
+    console.log("personForm submit > inicio", {
+      editingPersonId: editingPersonId || null,
+      payload,
+    });
 
     if (!payload.name) {
       showAdminMessage("error", "O nome e obrigatorio.");
       return;
     }
 
-    const editingPersonId = personIdInput.value;
-    const saved = editingPersonId
-      ? await updatePerson(editingPersonId, payload)
-      : await createPerson(payload);
+    savePersonButton.disabled = true;
+    savePersonButton.textContent = editingPersonId
+      ? "Salvando alteracoes..."
+      : "Criando pessoa...";
 
-    if (!saved) {
-      return;
+    try {
+      const saved = editingPersonId
+        ? await updatePerson(editingPersonId, payload)
+        : await createPerson(payload);
+
+      if (!saved) {
+        console.log("personForm submit > operacao retornou false");
+        return;
+      }
+
+      console.log("personForm submit > recarregando lista");
+      await loadAdminPeople();
+
+      console.log("personForm submit > resetando formulario");
+      resetPersonForm();
+    } catch (error) {
+      console.error("personForm submit > excecao inesperada", error);
+      showAdminMessage(
+        "error",
+        formatSupabaseError(error, "Erro inesperado ao salvar a pessoa.")
+      );
+    } finally {
+      savePersonButton.disabled = false;
+      savePersonButton.textContent = "Salvar pessoa";
+      console.log("personForm submit > finalizado");
     }
-
-    resetPersonForm();
-    await loadAdminPeople();
   });
 
   cancelEditButton.addEventListener("click", () => {
@@ -280,7 +420,14 @@
         .single();
 
       if (error) {
-        showAdminMessage("error", "Nao foi possivel carregar a pessoa para edicao.");
+        console.error("Erro ao carregar pessoa para edicao:", error, { personId });
+        showAdminMessage(
+          "error",
+          formatSupabaseError(
+            error,
+            "Nao foi possivel carregar a pessoa para edicao."
+          )
+        );
         return;
       }
 

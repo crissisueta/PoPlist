@@ -107,16 +107,20 @@
     top10ListElement.innerHTML = people
       .map(
         (person, index) => `
-          <article class="top-card">
-            <span class="rank-pill">#${index + 1}</span>
+          <article class="top-card ${index === 0 ? "top-card-first" : ""}">
+            <div class="top-card-rank">
+              <span class="rank-pill">#${index + 1}</span>
+            </div>
             <div class="card-header">
               ${createAvatar(person)}
-              <div>
+              <div class="top-card-content">
                 <h3 class="person-name">${person.name}</h3>
                 <p class="votes-total">${person.votes_count} voto(s)</p>
               </div>
             </div>
-            ${createVoteButton(person.id)}
+            <div class="top-card-action">
+              ${createVoteButton(person.id)}
+            </div>
           </article>
         `
       )

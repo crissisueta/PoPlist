@@ -176,7 +176,7 @@ input {
 }
 
 .top-grid {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .people-grid {
@@ -195,6 +195,34 @@ input {
 .top-card {
   position: relative;
   overflow: hidden;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 20px 22px;
+}
+
+.top-card-first {
+  grid-template-columns: auto 1.2fr auto;
+  padding: 26px 28px;
+  background: linear-gradient(135deg, #fff2cf, #fff8ec 65%, #fffdf8);
+  border-width: 2px;
+  box-shadow: 0 22px 48px rgba(180, 83, 9, 0.16);
+}
+
+.top-card-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-card-content {
+  min-width: 0;
+}
+
+.top-card-action {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .top-card::after {
@@ -204,6 +232,24 @@ input {
   width: 120px;
   height: 120px;
   background: radial-gradient(circle, rgba(180, 83, 9, 0.18), transparent 65%);
+}
+
+.top-card .card-header {
+  margin-bottom: 0;
+}
+
+.top-card-first .avatar,
+.top-card-first .avatar-placeholder {
+  width: 82px;
+  height: 82px;
+}
+
+.top-card-first .person-name {
+  font-size: 1.35rem;
+}
+
+.top-card-first .votes-total {
+  font-size: 1rem;
 }
 
 .card-header {
@@ -244,6 +290,11 @@ input {
   color: var(--primary-dark);
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+.top-card-first .rank-pill {
+  padding: 10px 16px;
+  font-size: 1rem;
 }
 
 .person-name {
@@ -358,6 +409,17 @@ input {
 
   .card-header {
     align-items: flex-start;
+  }
+
+  .top-card,
+  .top-card-first {
+    grid-template-columns: 1fr;
+    justify-items: flex-start;
+  }
+
+  .top-card-action {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .avatar,
