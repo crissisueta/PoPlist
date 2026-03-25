@@ -1,9 +1,7 @@
 (function () {
   const { supabase } = window.supabaseApp;
   const top10ListElement = document.getElementById("top10-list");
-  const allPeopleListElement = document.getElementById("all-people-list");
   const top10LoadingElement = document.getElementById("top10-loading");
-  const allPeopleLoadingElement = document.getElementById("all-people-loading");
   const publicMessageElement = document.getElementById("public-message");
   const voteStatusBadgeElement = document.getElementById("vote-status-badge");
 
@@ -130,35 +128,9 @@
                 <p class="votes-total">${person.votes_count} voto(s)</p>
               </div>
             </div>
-          </article>
-        `
-      )
-      .join("");
-  }
-
-  function renderAllPeople(people) {
-    if (!people.length) {
-      allPeopleLoadingElement.textContent = "Nenhuma pessoa ativa cadastrada.";
-      allPeopleLoadingElement.classList.remove("hidden");
-      allPeopleListElement.classList.add("hidden");
-      return;
-    }
-
-    allPeopleLoadingElement.classList.add("hidden");
-    allPeopleListElement.classList.remove("hidden");
-
-    allPeopleListElement.innerHTML = people
-      .map(
-        (person) => `
-          <article class="person-card">
-            <div class="card-header">
-              ${createAvatar(person)}
-              <div>
-                <h3 class="person-name">${person.name}</h3>
-                <p class="votes-total">${person.votes_count} voto(s)</p>
-              </div>
+            <div class="top-card-action">
+              ${createVoteActions(person.id)}
             </div>
-            ${createVoteActions(person.id)}
           </article>
         `
       )
@@ -181,23 +153,6 @@
     }
 
     renderTop10(data || []);
-  }
-
-  async function loadAllPeople() {
-    const { data, error } = await supabase
-      .from("people")
-      .select("id, name, photo_url, votes_count")
-      .eq("active", true)
-      .order("votes_count", { ascending: false })
-      .order("name", { ascending: true });
-
-    if (error) {
-      allPeopleLoadingElement.textContent = "Erro ao carregar a lista completa.";
-      showMessage("error", "Nao foi possivel carregar a lista de pessoas.");
-      return;
-    }
-
-    renderAllPeople(data || []);
   }
 
   async function checkIfAlreadyVotedToday() {
@@ -244,7 +199,7 @@
       return;
     }
 
-    const cardElement = buttonElement.closest(".person-card");
+    const cardElement = buttonElement.closest(".top-card, .person-card");
     const cardButtons = cardElement
       ? Array.from(cardElement.querySelectorAll(".vote-button"))
       : [buttonElement];
@@ -277,7 +232,7 @@
         localStorage.setItem("last_vote_date", today);
         localStorage.setItem("last_vote_type", voteType);
         setVoteStatusBadge();
-        await Promise.all([loadTop10(), loadAllPeople()]);
+        await loadTop10();
         showMessage(
           "warning",
           `Voce ja usou sua acao de hoje. Tente novamente em ${getTomorrowDateString()}.`
@@ -300,7 +255,7 @@
     setVoteStatusBadge();
     showMessage("success", "Voto registrado com sucesso.");
 
-    await Promise.all([loadTop10(), loadAllPeople()]);
+    await loadTop10();
   }
 
   document.addEventListener("click", async (event) => {
@@ -323,7 +278,7 @@
   async function initPage() {
     setVoteStatusBadge();
     await checkIfAlreadyVotedToday();
-    await Promise.all([loadTop10(), loadAllPeople()]);
+    await loadTop10();
   }
 
   initPage();
