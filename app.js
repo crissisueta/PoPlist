@@ -61,11 +61,25 @@
   }
 
   function createAvatar(person) {
+    const tomatoBadge = person.hasTomato
+      ? '<span class="tomato-badge" aria-label="Menor pontuacao" title="Menor pontuacao">🍅</span>'
+      : "";
+
     if (person.photo_url) {
-      return `<img class="avatar" src="${person.photo_url}" alt="Foto de ${person.name}" loading="lazy" />`;
+      return `
+        <div class="avatar-shell">
+          <img class="avatar" src="${person.photo_url}" alt="Foto de ${person.name}" loading="lazy" />
+          ${tomatoBadge}
+        </div>
+      `;
     }
 
-    return `<div class="avatar-placeholder" aria-hidden="true">${getInitials(person.name)}</div>`;
+    return `
+      <div class="avatar-shell">
+        <div class="avatar-placeholder" aria-hidden="true">${getInitials(person.name)}</div>
+        ${tomatoBadge}
+      </div>
+    `;
   }
 
   function createVoteActions(personId) {
@@ -91,7 +105,7 @@
           title="Downvote"
           ${disabledAttribute}
         >
-          <span class="arrow-icon" aria-hidden="true">▼</span>
+          <span class="arrow-icon tomato-icon" aria-hidden="true">🍅</span>
         </button>
       </div>
     `;
@@ -108,7 +122,13 @@
     top10LoadingElement.classList.add("hidden");
     top10ListElement.classList.remove("hidden");
 
+    const lowestVoteCount = Math.min(...people.map((person) => person.votes_count));
+
     top10ListElement.innerHTML = people
+      .map((person) => ({
+        ...person,
+        hasTomato: person.votes_count === lowestVoteCount,
+      }))
       .map(
         (person, index) => `
           <article class="top-card ${index === 0 ? "top-card-first" : ""}">

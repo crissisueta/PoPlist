@@ -280,6 +280,13 @@ a {
   flex-shrink: 0;
 }
 
+.avatar-shell {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+}
+
 .avatar {
   object-fit: cover;
   border: 2px solid rgba(180, 83, 9, 0.2);
@@ -292,6 +299,21 @@ a {
   color: #6b3607;
   font-weight: 700;
   font-size: 1.2rem;
+}
+
+.tomato-badge {
+  position: absolute;
+  top: -10px;
+  right: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 253, 248, 0.96);
+  box-shadow: 0 8px 18px rgba(43, 33, 23, 0.16);
+  font-size: 1rem;
 }
 
 .rank-pill {
@@ -410,6 +432,10 @@ a {
 .arrow-icon {
   font-size: 1.35rem;
   line-height: 1;
+}
+
+.tomato-icon {
+  font-size: 1.2rem;
 }
 
 .stack-form {
