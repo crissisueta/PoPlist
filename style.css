@@ -236,6 +236,8 @@ a {
 .top-card-action {
   display: flex;
   justify-content: flex-end;
+  position: relative;
+  z-index: 3;
 }
 
 .top-card::after {
@@ -245,10 +247,14 @@ a {
   width: 120px;
   height: 120px;
   background: radial-gradient(circle, rgba(180, 83, 9, 0.18), transparent 65%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .top-card .card-header {
   margin-bottom: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .top-card-first .avatar,
@@ -285,6 +291,7 @@ a {
   width: 68px;
   height: 68px;
   flex-shrink: 0;
+  z-index: 2;
 }
 
 .avatar {
@@ -303,18 +310,19 @@ a {
 
 .tomato-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -8px;
+  right: -8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: rgba(255, 253, 248, 0.96);
   box-shadow: 0 8px 18px rgba(43, 33, 23, 0.16);
-  font-size: 1.1rem;
-  z-index: 2;
+  font-size: 1.25rem;
+  z-index: 4;
+  pointer-events: none;
 }
 
 .rank-pill {
@@ -406,9 +414,13 @@ a {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 3;
 }
 
 .arrow-vote-button {
+  appearance: none;
+  -webkit-appearance: none;
   width: 48px;
   height: 48px;
   padding: 0;
@@ -416,6 +428,9 @@ a {
   border: 1px solid rgba(43, 33, 23, 0.08);
   background: rgba(255, 255, 255, 0.75);
   box-shadow: 0 10px 22px rgba(43, 33, 23, 0.08);
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
 }
 
 .arrow-vote-button-up {
