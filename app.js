@@ -101,8 +101,8 @@
           class="vote-button arrow-vote-button arrow-vote-button-down"
           data-person-id="${personId}"
           data-vote-type="downvote"
-          aria-label="Downvote"
-          title="Downvote"
+          aria-label="Tomato downvote"
+          title="Tomato downvote"
           ${disabledAttribute}
         >
           <span class="arrow-icon tomato-icon" aria-hidden="true">🍅</span>
@@ -239,7 +239,10 @@
       cardButtons.forEach((button) => {
         button.disabled = false;
       });
-      showMessage("error", "Nao foi possivel registrar seu voto. Tente novamente.");
+      showMessage(
+        "error",
+        `Nao foi possivel registrar seu voto. ${error.message || "Tente novamente."}`
+      );
       return;
     }
 

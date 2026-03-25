@@ -207,7 +207,7 @@ a {
 
 .top-card {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: 18px;
@@ -303,17 +303,18 @@ a {
 
 .tomato-badge {
   position: absolute;
-  top: -10px;
-  right: -6px;
+  top: -4px;
+  right: -4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: rgba(255, 253, 248, 0.96);
   box-shadow: 0 8px 18px rgba(43, 33, 23, 0.16);
-  font-size: 1rem;
+  font-size: 1.1rem;
+  z-index: 2;
 }
 
 .rank-pill {
@@ -423,6 +424,8 @@ a {
 
 .arrow-vote-button-down {
   color: var(--danger);
+  background: rgba(254, 242, 242, 0.96);
+  border-color: rgba(185, 28, 28, 0.12);
 }
 
 .arrow-vote-button:disabled {
@@ -435,7 +438,7 @@ a {
 }
 
 .tomato-icon {
-  font-size: 1.2rem;
+  font-size: 1.45rem;
 }
 
 .stack-form {
