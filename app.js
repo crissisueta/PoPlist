@@ -3,25 +3,14 @@
   const top10ListElement = document.getElementById("top10-list");
   const top10LoadingElement = document.getElementById("top10-loading");
   const publicMessageElement = document.getElementById("public-message");
-  const voteStatusBadgeElement = document.getElementById("vote-status-badge");
 
   let hasUsedDailyAction = false;
-  let lastVoteType = null;
 
   function getTodayDateString() {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-
-  function getTomorrowDateString() {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const year = tomorrow.getFullYear();
-    const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
-    const day = String(tomorrow.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
 
@@ -58,18 +47,6 @@
     publicMessageElement.className = "message hidden";
   }
 
-  function setVoteStatusBadge() {
-    if (hasUsedDailyAction) {
-      const actionLabel = lastVoteType === "downvote" ? "Downvote usado" : "Upvote usado";
-      voteStatusBadgeElement.textContent = `${actionLabel} hoje. Libera em ${getTomorrowDateString()}`;
-      voteStatusBadgeElement.className = "status-badge success";
-      return;
-    }
-
-    voteStatusBadgeElement.textContent = "Disponivel para votar";
-    voteStatusBadgeElement.className = "status-badge";
-  }
-
   function createAvatar(person) {
     if (person.photo_url) {
       return `<img class="avatar" src="${person.photo_url}" alt="Foto de ${person.name}" loading="lazy" />`;
@@ -84,20 +61,24 @@
     return `
       <div class="vote-actions">
         <button
-          class="primary-button vote-button"
+          class="vote-button arrow-vote-button arrow-vote-button-up"
           data-person-id="${personId}"
           data-vote-type="upvote"
+          aria-label="Upvote"
+          title="Upvote"
           ${disabledAttribute}
         >
-          Upvote
+          <span class="arrow-icon" aria-hidden="true">▲</span>
         </button>
         <button
-          class="danger-button vote-button"
+          class="vote-button arrow-vote-button arrow-vote-button-down"
           data-person-id="${personId}"
           data-vote-type="downvote"
+          aria-label="Downvote"
+          title="Downvote"
           ${disabledAttribute}
         >
-          Downvote
+          <span class="arrow-icon" aria-hidden="true">▼</span>
         </button>
       </div>
     `;
@@ -168,23 +149,17 @@
 
     if (error) {
       hasUsedDailyAction = localStorage.getItem("last_vote_date") === today;
-      lastVoteType = localStorage.getItem("last_vote_type");
-      setVoteStatusBadge();
       return hasUsedDailyAction;
     }
 
     hasUsedDailyAction = Array.isArray(data) && data.length > 0;
-    lastVoteType = hasUsedDailyAction ? data[0].vote_type : null;
 
     if (hasUsedDailyAction) {
       localStorage.setItem("last_vote_date", today);
-      localStorage.setItem("last_vote_type", lastVoteType || "upvote");
     } else {
       localStorage.removeItem("last_vote_date");
-      localStorage.removeItem("last_vote_type");
     }
 
-    setVoteStatusBadge();
     return hasUsedDailyAction;
   }
 
@@ -192,10 +167,7 @@
     hideMessage();
 
     if (hasUsedDailyAction) {
-      showMessage(
-        "warning",
-        `Voce ja usou sua acao de hoje. Tente novamente em ${getTomorrowDateString()}.`
-      );
+      showMessage("warning", "Voce ja usou sua acao de hoje.");
       return;
     }
 
@@ -206,9 +178,6 @@
 
     cardButtons.forEach((button) => {
       button.disabled = true;
-      if (button === buttonElement) {
-        button.textContent = "Enviando...";
-      }
     });
 
     const today = getTodayDateString();
@@ -228,31 +197,21 @@
       hasUsedDailyAction = duplicateVote || error.code === "23505";
 
       if (hasUsedDailyAction) {
-        lastVoteType = voteType;
         localStorage.setItem("last_vote_date", today);
-        localStorage.setItem("last_vote_type", voteType);
-        setVoteStatusBadge();
         await loadTop10();
-        showMessage(
-          "warning",
-          `Voce ja usou sua acao de hoje. Tente novamente em ${getTomorrowDateString()}.`
-        );
+        showMessage("warning", "Voce ja usou sua acao de hoje.");
         return;
       }
 
       cardButtons.forEach((button) => {
         button.disabled = false;
-        button.textContent = button.dataset.voteType === "downvote" ? "Downvote" : "Upvote";
       });
       showMessage("error", "Nao foi possivel registrar seu voto. Tente novamente.");
       return;
     }
 
     hasUsedDailyAction = true;
-    lastVoteType = voteType;
     localStorage.setItem("last_vote_date", today);
-    localStorage.setItem("last_vote_type", voteType);
-    setVoteStatusBadge();
     showMessage("success", "Voto registrado com sucesso.");
 
     await loadTop10();
@@ -276,7 +235,6 @@
   });
 
   async function initPage() {
-    setVoteStatusBadge();
     await checkIfAlreadyVotedToday();
     await loadTop10();
   }
