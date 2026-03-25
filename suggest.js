@@ -15,7 +15,20 @@
   let currentCycleStart = null;
   let hasVotedThisCycle = false;
 
+  function getDevVoterTokenOverride() {
+    const params = new URLSearchParams(window.location.search);
+    const rawValue = params.get("dev_voter");
+    const devToken = rawValue ? rawValue.trim() : "";
+    return devToken || null;
+  }
+
   function getOrCreateVoterToken() {
+    const devTokenOverride = getDevVoterTokenOverride();
+
+    if (devTokenOverride) {
+      return `dev-voter:${devTokenOverride}`;
+    }
+
     const storageKey = "voter_token";
     let voterToken = localStorage.getItem(storageKey);
 
