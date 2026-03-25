@@ -12,8 +12,12 @@
         <p class="eyebrow">Projeto público de votação</p>
         <h1>PoPlist UFBA</h1>
         <p class="hero-text">
-          Vote uma vez por dia e acompanhe quem está liderando o ranking da lista pop mais babadeira da ufba toda!.
+          Vote uma vez por dia com upvote ou downvote e acompanhe quem está liderando o ranking da lista pop mais babadeira da ufba toda!.
         </p>
+        <div class="hero-actions">
+          <a class="ghost-button link-button" href="suggest.html">Sugerir pessoa</a>
+          <a class="secondary-button link-button" href="admin.html">Painel admin</a>
+        </div>
       </div>
     </header>
 
@@ -22,12 +26,15 @@
         <div class="section-header">
           <div>
             <p class="section-kicker">Status da votação</p>
-            <h2>Seu voto de hoje</h2>
+            <h2>Sua ação de hoje</h2>
           </div>
           <span id="vote-status-badge" class="status-badge">Carregando...</span>
         </div>
 
         <div id="public-message" class="message hidden" role="alert"></div>
+        <p class="muted-text inline-note">
+          Cada navegador pode usar 1 ação por dia: um upvote ou um downvote.
+        </p>
       </section>
 
       <section class="panel">

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PoPlist UFBA | Vote para Adicionar</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="container">
+        <p class="eyebrow">Nova rodada a cada 2 dias</p>
+        <h1>Vote para Adicionar</h1>
+        <p class="hero-text">
+          Sugira um nome novo, vote na rodada atual e acompanhe quem entra no ranking principal ao fim de cada ciclo.
+        </p>
+        <div class="hero-actions">
+          <a class="ghost-button link-button" href="index.html">Voltar ao ranking</a>
+          <a class="secondary-button link-button" href="admin.html">Painel admin</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container page-content">
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Rodada atual</p>
+            <h2>Seu voto para adicionar</h2>
+          </div>
+          <span id="suggestion-vote-status-badge" class="status-badge">Carregando...</span>
+        </div>
+
+        <p id="cycle-summary" class="muted-text">
+          Carregando informacoes da rodada...
+        </p>
+
+        <div id="suggestion-public-message" class="message hidden" role="alert"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Concorrendo agora</p>
+            <h2>Pessoas sugeridas</h2>
+          </div>
+        </div>
+
+        <div id="suggestions-loading" class="state-box">Carregando sugestoes...</div>
+        <div id="suggestions-list" class="people-grid hidden"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Nova sugestão</p>
+            <h2>Enviar nome para a fila</h2>
+          </div>
+        </div>
+
+        <form id="suggestion-form" class="stack-form" enctype="multipart/form-data">
+          <label>
+            <span>Nome da pessoa</span>
+            <input type="text" id="suggestion-name" required maxlength="120" />
+          </label>
+
+          <label>
+            <span>Foto</span>
+            <input type="file" id="suggestion-photo" accept="image/*" />
+          </label>
+
+          <button type="submit" class="primary-button" id="submit-suggestion-button">
+            Enviar sugestao
+          </button>
+        </form>
+
+        <p class="muted-text inline-note">
+          A imagem sera enviada para o bucket publico <code>suggestion-images</code> no Supabase.
+        </p>
+        <div id="suggestion-form-message" class="message hidden" role="alert"></div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="suggest.js"></script>
+  </body>
+</html>

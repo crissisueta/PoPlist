@@ -7,7 +7,8 @@
   const publicMessageElement = document.getElementById("public-message");
   const voteStatusBadgeElement = document.getElementById("vote-status-badge");
 
-  let hasVotedToday = false;
+  let hasUsedDailyAction = false;
+  let lastVoteType = null;
 
   function getTodayDateString() {
     const now = new Date();
@@ -60,13 +61,14 @@
   }
 
   function setVoteStatusBadge() {
-    if (hasVotedToday) {
-      voteStatusBadgeElement.textContent = `Voto usado hoje. Libera em ${getTomorrowDateString()}`;
+    if (hasUsedDailyAction) {
+      const actionLabel = lastVoteType === "downvote" ? "Downvote usado" : "Upvote usado";
+      voteStatusBadgeElement.textContent = `${actionLabel} hoje. Libera em ${getTomorrowDateString()}`;
       voteStatusBadgeElement.className = "status-badge success";
       return;
     }
 
-    voteStatusBadgeElement.textContent = "Disponível para votar";
+    voteStatusBadgeElement.textContent = "Disponivel para votar";
     voteStatusBadgeElement.className = "status-badge";
   }
 
@@ -78,18 +80,28 @@
     return `<div class="avatar-placeholder" aria-hidden="true">${getInitials(person.name)}</div>`;
   }
 
-  function createVoteButton(personId) {
-    const disabledAttribute = hasVotedToday ? "disabled" : "";
-    const buttonText = hasVotedToday ? "Voto indisponível hoje" : "Votar";
+  function createVoteActions(personId) {
+    const disabledAttribute = hasUsedDailyAction ? "disabled" : "";
 
     return `
-      <button
-        class="primary-button vote-button"
-        data-person-id="${personId}"
-        ${disabledAttribute}
-      >
-        ${buttonText}
-      </button>
+      <div class="vote-actions">
+        <button
+          class="primary-button vote-button"
+          data-person-id="${personId}"
+          data-vote-type="upvote"
+          ${disabledAttribute}
+        >
+          Upvote
+        </button>
+        <button
+          class="danger-button vote-button"
+          data-person-id="${personId}"
+          data-vote-type="downvote"
+          ${disabledAttribute}
+        >
+          Downvote
+        </button>
+      </div>
     `;
   }
 
@@ -146,7 +158,7 @@
                 <p class="votes-total">${person.votes_count} voto(s)</p>
               </div>
             </div>
-            ${createVoteButton(person.id)}
+            ${createVoteActions(person.id)}
           </article>
         `
       )
@@ -194,79 +206,101 @@
 
     const { data, error } = await supabase
       .from("votes")
-      .select("id", { head: false })
+      .select("id, vote_type", { head: false })
       .eq("voter_token", voterToken)
       .eq("vote_date", today)
       .limit(1);
 
     if (error) {
-      hasVotedToday = localStorage.getItem("last_vote_date") === today;
+      hasUsedDailyAction = localStorage.getItem("last_vote_date") === today;
+      lastVoteType = localStorage.getItem("last_vote_type");
       setVoteStatusBadge();
-      return hasVotedToday;
+      return hasUsedDailyAction;
     }
 
-    hasVotedToday = Array.isArray(data) && data.length > 0;
+    hasUsedDailyAction = Array.isArray(data) && data.length > 0;
+    lastVoteType = hasUsedDailyAction ? data[0].vote_type : null;
 
-    if (hasVotedToday) {
+    if (hasUsedDailyAction) {
       localStorage.setItem("last_vote_date", today);
+      localStorage.setItem("last_vote_type", lastVoteType || "upvote");
     } else {
       localStorage.removeItem("last_vote_date");
+      localStorage.removeItem("last_vote_type");
     }
 
     setVoteStatusBadge();
-    return hasVotedToday;
+    return hasUsedDailyAction;
   }
 
-  async function submitVote(personId, buttonElement) {
+  async function submitVote(personId, voteType, buttonElement) {
     hideMessage();
 
-    if (hasVotedToday) {
+    if (hasUsedDailyAction) {
       showMessage(
         "warning",
-        `Voce ja votou hoje. Tente novamente em ${getTomorrowDateString()}.`
+        `Voce ja usou sua acao de hoje. Tente novamente em ${getTomorrowDateString()}.`
       );
       return;
     }
 
-    buttonElement.disabled = true;
-    buttonElement.textContent = "Enviando...";
+    const cardElement = buttonElement.closest(".person-card");
+    const cardButtons = cardElement
+      ? Array.from(cardElement.querySelectorAll(".vote-button"))
+      : [buttonElement];
+
+    cardButtons.forEach((button) => {
+      button.disabled = true;
+      if (button === buttonElement) {
+        button.textContent = "Enviando...";
+      }
+    });
 
     const today = getTodayDateString();
     const voterToken = getOrCreateVoterToken();
+    const voteValue = voteType === "downvote" ? -1 : 1;
 
     const { error } = await supabase.rpc("submit_vote", {
       p_person_id: personId,
       p_voter_token: voterToken,
       p_vote_date: today,
+      p_vote_value: voteValue,
+      p_vote_type: voteType,
     });
 
     if (error) {
       const duplicateVote = error.message.toLowerCase().includes("already voted");
-      hasVotedToday = duplicateVote || error.code === "23505";
+      hasUsedDailyAction = duplicateVote || error.code === "23505";
 
-      if (hasVotedToday) {
+      if (hasUsedDailyAction) {
+        lastVoteType = voteType;
         localStorage.setItem("last_vote_date", today);
+        localStorage.setItem("last_vote_type", voteType);
         setVoteStatusBadge();
         await Promise.all([loadTop10(), loadAllPeople()]);
         showMessage(
           "warning",
-          `Voce ja votou hoje. Tente novamente em ${getTomorrowDateString()}.`
+          `Voce ja usou sua acao de hoje. Tente novamente em ${getTomorrowDateString()}.`
         );
         return;
       }
 
-      buttonElement.disabled = false;
-      buttonElement.textContent = "Votar";
+      cardButtons.forEach((button) => {
+        button.disabled = false;
+        button.textContent = button.dataset.voteType === "downvote" ? "Downvote" : "Upvote";
+      });
       showMessage("error", "Nao foi possivel registrar seu voto. Tente novamente.");
       return;
     }
 
-    hasVotedToday = true;
+    hasUsedDailyAction = true;
+    lastVoteType = voteType;
     localStorage.setItem("last_vote_date", today);
+    localStorage.setItem("last_vote_type", voteType);
     setVoteStatusBadge();
+    showMessage("success", "Voto registrado com sucesso.");
 
     await Promise.all([loadTop10(), loadAllPeople()]);
-    showMessage("success", "Voto registrado com sucesso.");
   }
 
   document.addEventListener("click", async (event) => {
@@ -277,26 +311,20 @@
     }
 
     const personId = voteButton.dataset.personId;
+    const voteType = voteButton.dataset.voteType || "upvote";
 
     if (!personId) {
       return;
     }
 
-    await submitVote(personId, voteButton);
+    await submitVote(personId, voteType, voteButton);
   });
 
-  async function init() {
-    hideMessage();
+  async function initPage() {
     setVoteStatusBadge();
-
     await checkIfAlreadyVotedToday();
     await Promise.all([loadTop10(), loadAllPeople()]);
   }
 
-  window.loadTop10 = loadTop10;
-  window.loadAllPeople = loadAllPeople;
-  window.submitVote = submitVote;
-  window.checkIfAlreadyVotedToday = checkIfAlreadyVotedToday;
-
-  init();
+  initPage();
 })();
